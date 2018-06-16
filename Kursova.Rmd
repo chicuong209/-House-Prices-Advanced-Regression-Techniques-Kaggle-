@@ -70,8 +70,7 @@ cat ("The number of duplicate rows in training set are : ", nrow(train) - nrow(u
 
 ```
 
-### Among 1460 variables, 'Alley', 'PoolQC', 'Fence' and 'MiscFeature' have amazingly high number of missing value. Therefore, I have decided to remove those variables. After that, the number of effective variables has shrunken to 75 (excluding id).
-
+### Among 1460 variables, 'Alley', 'PoolQC', 'Fence' and 'MiscFeature' have amazingly high number of missing value. Therefore, I have decided to remove those variables.
 ```{r}
 train<- train[,-c(7,73,74,75)]
 
@@ -84,7 +83,7 @@ train[is.na(train)] <- 0
 
 ```
 
-#### Then, I transferred dummny variables into numeric form. Due to the intimidating size of dummy variables, I decided to transfer them directly by implementing 'as.integer' method. This is why I let the string as factor when reading the data file. The numeric variables are sorted out in particular for the convenience of descriptive analysis.
+#### Transfer categorical features to integer/numerical features 
 
 ```{r}
 
@@ -105,9 +104,6 @@ train[is.na(train)] <- 0
 ```
 
 # DATA VISUALIZATION
-
-### Exploring dataset could be diffcult when the quantity of variables is quite huge. Therefore, I mainly focused on the exploration of numeric variables in this report. The descriptive analysis of dummy variables are mostly finished by drawing box plots. Some dummy variables, like 'Street', are appeared to be ineffective due to the extreme box plot. The numeric variables are sorted out before turning dummy variables into numeric form.
-
 ### We first draw a corrplot of numeric variables. Those with strong correlation with sale price are examined.
 
 ```{r}
@@ -136,11 +132,9 @@ print (p)
 
 ### It is not difficult to see that SalePrice of the house increases generally with the year built, the trend is obvious.
 
-### The workload of data exploration is huge so I decide to end it at here. More details can be digged out by performing descriptive analysis.
-
 # MODEL SELECTION
 
-### Before implementing models, one should first split the training set of data into 2 parts: a training set within the training set and a test set that can be used for evaluation. Personally i prefer to split it with ratio 6:4. 
+### Before implementing models, one should first split the training set of data into 2 parts: a training set within the training set and a test set that can be used for evaluation. Personally i prefer to split it with ratio 5:3. 
 
 ```{r}
 positions <- sample(1:nrow(train),size = floor(nrow(train)/5)*3)
@@ -162,8 +156,7 @@ summary(reg)
 
 ```
 
-### R Square is not bad, but many variables do not pass the Hypothesis Testing, so the model is not perfect. Potential overfitting will occur if someone insist on using it. Therefore, the variable selection process should be involved in model construction. I prefer to use Step AIC method.
-
+### R Square is not bad, but many variables do not pass the Hypothesis Testing, so the model is not perfect. Potential overfitting will occur if someone insist on using it. Therefore, the variable selection process should be involved in model construction.
 ### Several variables still should not be involved in model. By checking the result of Hypothesis Test, I mannually build the final linear regression model.
 
 ```{r}
@@ -294,10 +287,11 @@ modelxgb <- xgb.train(params = param,data = train_data,nrounds = 1000,
                       print_every_n = 50, nthread = 6)
 predxgb <- predict(modelxgb,testing)
 sqrt(sum((testing[,"SalePrice"] - predxgb)^2)/nrow(testing))
+```
 
 
-## OR we can use caret package as following:
-
+# OR we can use caret package as following:
+```{r}
 cv.ctrl <- trainControl(method = "repeatedcv", repeats = 1,number = 3)
 xgb.grid <- expand.grid(nrounds = 500,
                         max_depth = seq(6,10),
